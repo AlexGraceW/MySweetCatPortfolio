@@ -2,6 +2,8 @@ import { prisma } from "../../lib/prisma";
 
 type Provider = "YOUTUBE" | "VIMEO" | "SELF";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const home = await prisma.homePage.findUnique({
     where: { id: 1 },

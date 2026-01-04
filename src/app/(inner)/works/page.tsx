@@ -3,6 +3,8 @@
 
 import { prisma } from "../../../lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function WorksPage() {
   const page = await prisma.worksPage.findUnique({ where: { id: 1 } });
   const works = await prisma.workItem.findMany({
