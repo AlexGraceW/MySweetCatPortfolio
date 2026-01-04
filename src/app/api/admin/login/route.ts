@@ -1,60 +1,53 @@
+// REPLACE FILE: src/app/api/admin/login/route.ts
 import { NextResponse } from "next/server";
-import * as bcrypt from "bcryptjs";
-import { randomBytes } from "crypto";
-import { prisma } from "../../../../lib/prisma";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+import { set_session_cookie } from "@/lib/auth";
 
-const COOKIE_NAME = "session_id";
+type LoginBody = {
+  email?: string;
+  password?: string;
+};
 
-export const runtime = "nodejs";
-
-export async function POST(req: Request) {
-  try {
-    const body = await req.json().catch(() => null);
-
-    const email =
-      typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
-    const password = typeof body?.password === "string" ? body.password : "";
-
-    if (!email || password.length < 4) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 400 });
-    }
-
-    const user = await prisma.adminUser.findUnique({ where: { email } });
-    if (!user) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-    }
-
-    const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-    }
-
-    const sessionId = randomBytes(24).toString("hex");
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-    await prisma.session.create({
-      data: {
-        id: sessionId,
-        userId: user.id,
-        expiresAt
-      }
-    });
-
-    const res = NextResponse.json({ ok: true });
-
-    // ✅ СТАВИМ COOKIE НА ОТВЕТЕ (самый надежный способ)
-    res.cookies.set(COOKIE_NAME, sessionId, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      expires: expiresAt
-    });
-
-    return res;
-  } catch (err) {
-    console.error("ADMIN LOGIN ERROR:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
+function json_error(message: string, status: number) {
+  return NextResponse.json({ error: message }, { status });
 }
 
+export async function POST(req: Request) {
+  const body = (await req.json().catch(() => null)) as LoginBody | null;
+
+  const email = (body?.email || "").trim().toLowerCase();
+  const password = body?.password || "";
+
+  if (!email || !password) {
+    return json_error("Email and password are required.", 400);
+  }
+
+  const user = await prisma.adminUser.findUnique({
+    where: { email },
+    select: { id: true, email: true, passwordHash: true }
+  });
+
+  if (!user) {
+    return json_error("Invalid credentials.", 401);
+  }
+
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) {
+    return json_error("Invalid credentials.", 401);
+  }
+
+  const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  const session = await prisma.session.create({
+    data: {
+      userId: user.id,
+      expiresAt: expires_at
+    },
+    select: { id: true }
+  });
+
+  await set_session_cookie(session.id, expires_at);
+
+  return NextResponse.json({ ok: true });
+}

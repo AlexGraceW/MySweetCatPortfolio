@@ -20,12 +20,15 @@ model AdminUser {
 }
 
 model Session {
-  id        String    @id
+  id        String    @id @default(cuid())
   userId    Int
   user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
-  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
+
 
 // HOME PAGE
 

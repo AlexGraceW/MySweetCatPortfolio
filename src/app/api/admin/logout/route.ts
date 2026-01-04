@@ -1,28 +1,16 @@
+// REPLACE FILE: src/app/api/admin/logout/route.ts
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { prisma } from "../../../../lib/prisma";
-
-const COOKIE_NAME = "session_id";
-
-export const runtime = "nodejs";
+import { prisma } from "@/lib/prisma";
+import { clear_session_cookie, get_session_cookie } from "@/lib/auth";
 
 export async function POST() {
-  const cookie_store = await cookies();
-  const sid = cookie_store.get(COOKIE_NAME)?.value;
+  const session_id = await get_session_cookie();
 
-  if (sid) {
-    await prisma.session.delete({ where: { id: sid } }).catch(() => null);
+  if (session_id) {
+    await prisma.session.delete({ where: { id: session_id } }).catch(() => undefined);
   }
 
-  const res = NextResponse.json({ ok: true });
+  await clear_session_cookie();
 
-  res.cookies.set(COOKIE_NAME, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    expires: new Date(0)
-  });
-
-  return res;
+  return NextResponse.json({ ok: true });
 }
