@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ADMIN AUTH
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions Session[]
+}
+
+model Session {
+  id        String    @id
+  userId    Int
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+}
+
+// HOME PAGE
+
+model HomePage {
+  id                Int      @id @default(1)
+  heroTitle         String
+  heroSubtitle      String
+  bannerImageUrl    String
+  directorName      String
+  directorRole      String
+  directorAvatarUrl String
+  introProvider     String
+  introVideoUrl     String
+
+  aboutTitle        String   @default("About")
+  aboutHtml         String   @default("<p>Write a short director statement here.</p>")
+
+  updatedAt         DateTime @updatedAt
+
+  sections          HomeSection[]
+}
+
+model HomeSection {
+  id     Int      @id @default(autoincrement())
+  homeId Int
+  home   HomePage @relation(fields: [homeId], references: [id], onDelete: Cascade)
+
+  title    String
+  html     String
+  photoUrl String
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// WORKS / PORTFOLIO
+
+model Work {
+  id               Int      @id @default(autoincrement())
+  title            String
+  slug             String   @unique
+  descriptionShort String
+  descriptionFull  String
+  provider         String
+  videoUrl         String
+  thumbnailUrl     String
+  tagsJson         String
+  sortOrder        Int      @default(0)
+  isPublished      Boolean  @default(true)
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// CONTACT FORM
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  status    String   @default("new")
+}
+model WorksPage {
+  id            Int      @id @default(1)
+  heroTitle     String
+  heroSubtitle  String
+  bannerImageUrl String
+  updatedAt     DateTime @updatedAt
+
+  works         WorkItem[]
+}
+
+model WorkItem {
+  id           Int      @id @default(autoincrement())
+  worksPageId  Int      @default(1)
+  worksPage    WorksPage @relation(fields: [worksPageId], references: [id], onDelete: Cascade)
+
+  title        String
+  slug         String   @unique
+  description  String   @default("")
+  provider     String   @default("YOUTUBE") // YOUTUBE | VIMEO | SELF
+  videoUrl     String
+  sortOrder    Int      @default(0)
+  published    Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([worksPageId, sortOrder])
+}
+
+model ContactsPage {
+  id             Int      @id @default(1)
+  heroTitle      String
+  heroSubtitle   String
+  bannerImageUrl String
+  updatedAt      DateTime @updatedAt
+}
