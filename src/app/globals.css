@@ -340,6 +340,14 @@ img {
     grid-template-columns: 1fr;
   }
 }
+/* ================= HOME SECTIONS (MOBILE: PHOTO FIRST) ================= */
+
+@media (max-width: 640px) {
+  /* Только Home */
+  .home-row .home-photo {
+    order: -1;
+  }
+}
 
 /* ================= FOOTER (HOME) ================= */
 
