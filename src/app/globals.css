@@ -141,7 +141,7 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 90%;
+  object-position: 50% 80%;
   opacity: 0.75;
 }
 
@@ -162,14 +162,15 @@ img {
   padding: clamp(18px, 6vw, 100px);
   text-align: start;
 }
-/* ================= HERO TEXT (MOBILE: BOTTOM) ================= */
+/* ================= HERO TEXT (MOBILE — HOME ONLY) ================= */
 
 @media (max-width: 640px) {
-  .hero-banner {
+  /* Только Home */
+  .hero-banner.home {
     position: relative;
   }
 
-  .hero-text {
+  .hero-banner.home .hero-text {
     position: absolute;
     left: 0;
     right: 0;
@@ -178,7 +179,6 @@ img {
     padding: 16px 18px 18px;
     text-align: left;
 
-    /* затемнение снизу для читаемости */
     background: linear-gradient(
       to top,
       rgba(11, 12, 16, 0.85),
@@ -187,12 +187,12 @@ img {
     );
   }
 
-  .hero-title {
+  .hero-banner.home .hero-title {
     font-size: 26px;
     margin-bottom: 6px;
   }
 
-  .hero-subtitle {
+  .hero-banner.home .hero-subtitle {
     font-size: 14px;
   }
 }
