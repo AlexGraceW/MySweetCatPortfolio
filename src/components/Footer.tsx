@@ -151,7 +151,7 @@ export async function Footer() {
 
                 <figure className="quote">
                   <blockquote>
-                    “He elevated our story with subtle details. Great taste, great
+                    “She elevated our story with subtle details. Great taste, great
                     communication.”
                   </blockquote>
                   <figcaption>— Creative Director</figcaption>
