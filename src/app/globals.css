@@ -25,8 +25,14 @@ a {
   text-decoration: none;
 }
 
+/* Чтобы изображения не "выпирали" на мобилке и не ломали layout */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 .container {
-  width: min(1100px, calc(100% - 32px));
+  width: min(1100px, calc(100% - 24px));
   margin: 0 auto;
 }
 
@@ -117,7 +123,30 @@ a {
   background: #0f1220;
 }
 
+/* HOME banner */
 .hero-banner.home img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 38%;
+  opacity: 0.75;
+}
+
+/* WORKS banner */
+.hero-banner.works img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 38%;
+  opacity: 0.75;
+}
+
+/* CONTACTS banner */
+.hero-banner.contacts img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -129,7 +158,9 @@ a {
 
 .hero-text {
   position: relative;
-  padding: 100px;
+  /* clamp вместо padding:100px — плавно масштабируется под размеры экрана */
+  padding: clamp(18px, 6vw, 100px);
+  text-align: start;
 }
 
 .hero-title {
@@ -140,6 +171,24 @@ a {
 .hero-subtitle {
   margin: 0;
   color: var(--muted);
+}
+
+/* ================= HERO (MOBILE) ================= */
+
+@media (max-width: 640px) {
+  .hero-banner {
+    min-height: 220px;
+    border-radius: 18px;
+  }
+
+  .hero-title {
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+  }
 }
 
 /* ================= AVATAR ================= */
@@ -170,15 +219,30 @@ a {
   display: block;
   object-fit: cover;
   object-position: 60%;
-  transform: scale(10.0);
+
+  /* scale(10) был слишком агрессивный; делаем аккуратное увеличение только картинки */
+  transform: scale(1.15);
   transition: transform 180ms ease;
   will-change: transform;
 }
 
 .avatar-wrap:hover .avatar-img {
-  transform: none;
+  transform: scale(1.22);
 }
 
+/* ================= AVATAR ROW (MOBILE) ================= */
+
+@media (max-width: 640px) {
+  .profile-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .avatar-wrap {
+    width: 88px;
+    height: 88px;
+  }
+}
 
 /* ================= CONTENT ================= */
 
@@ -198,16 +262,42 @@ a {
   top: 86px;
 }
 
-/* ================= HOME SECTIONS ================= */
+.work-thumb {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: #0f1220;
+}
+
+/* ================= HOME SECTIONS (2/3 + 1/3, alternating) ================= */
 
 .home-row {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 16px;
+  align-items: stretch;
 }
 
 .home-row--reverse {
   grid-template-columns: 1fr 2fr;
+}
+
+.home-photo {
+  height: 100%;
+  min-height: 220px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #0f1220;
+}
+
+.home-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 @media (max-width: 900px) {
@@ -217,28 +307,7 @@ a {
   }
 }
 
-.section-photo-card {
-  display: flex;
-  flex-direction: column;
-}
-
-.section-photo-wrap {
-  width: 100%;
-  height: 100%;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  background: #0f1220;
-}
-
-.section-photo-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* ================= FOOTER ================= */
+/* ================= FOOTER (HOME) ================= */
 
 .site-footer {
   margin-top: 30px;
@@ -283,7 +352,6 @@ a {
 }
 
 .footer-brand-subtitle {
-  font-size: 14px;
   margin-top: 4px;
   color: var(--muted);
 }
@@ -295,70 +363,13 @@ a {
 }
 
 .footer-cta-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
 }
 
 .footer-cta-subtitle {
-  font-size: 14px;
   margin-top: 6px;
   color: var(--muted);
-}
-
-/* CTA BUTTONS (Footer) */
-
-.footer-cta-actions {
-  margin-top: 12px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.footer-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 10px 16px;
-  border-radius: 14px;
-
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
-
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1;
-
-  cursor: pointer;
-  transition: background 180ms ease, border-color 180ms ease, transform 120ms ease;
-}
-
-.footer-btn:hover {
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-1px);
-}
-
-.footer-btn:active {
-  transform: translateY(0);
-}
-
-.footer-btn-lg {
-  min-height: 42px;
-}
-
-.footer-btn-primary {
-  border-color: rgba(122, 167, 255, 0.45);
-  background: rgba(122, 167, 255, 0.16);
-}
-
-.footer-btn-primary:hover {
-  background: rgba(122, 167, 255, 0.22);
-}
-
-.footer-btn-outline {
-  background: transparent;
 }
 
 .footer-divider {
@@ -384,7 +395,7 @@ a {
   margin-bottom: 10px;
 }
 
-/* SOCIAL */
+/* SOCIAL (HOME) */
 
 .social {
   font-size: 15px;
@@ -405,15 +416,6 @@ a {
 .social-name-img {
   display: block;
   object-fit: contain;
-}
-
-.social-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
 }
 
 .social-link.ig {
@@ -456,96 +458,6 @@ a {
   font-size: 13px;
 }
 
-/* CONTACTS (NEW) */
-
-.footer-contacts {
-  display: grid;
-  gap: 10px;
-}
-
-.footer-contact-row {
-  display: grid;
-  grid-template-columns: 78px 1fr;
-  gap: 10px;
-  align-items: start;
-}
-
-.footer-contact-label {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.footer-contact-value {
-  color: var(--text);
-  line-height: 1.5;
-}
-
-.footer-contact-link {
-  color: var(--text);
-  line-height: 1.5;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-  width: fit-content;
-  padding-bottom: 2px;
-}
-
-.footer-contact-link:hover {
-  border-bottom-color: rgba(122, 167, 255, 0.55);
-}
-
-.footer-contact-note {
-  margin-top: 10px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-/* ================= FOOTER CONTACTS ROW ================= */
-
-.footer-contacts-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 14px;
-
-  padding: 14px 18px 6px;
-  margin-top: 6px;
-
-  font-size: 14px;
-  color: var(--text);
-  text-align: center;
-  flex-wrap: wrap;
-}
-
-.footer-contacts-row a {
-  color: var(--text);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  padding-bottom: 2px;
-}
-
-.footer-contacts-row a:hover {
-  border-bottom-color: rgba(122, 167, 255, 0.6);
-}
-
-.footer-sep {
-  color: rgba(255, 255, 255, 0.35);
-}
-
-/* MOBILE */
-
-@media (max-width: 600px) {
-  .footer-contacts-row {
-    gap: 8px;
-    font-size: 13px;
-  }
-
-  .footer-sep {
-    display: none;
-  }
-}
-
-
 /* INFO */
 
 .footer-list {
@@ -573,59 +485,42 @@ a {
   text-align: center;
 }
 
+/* CONTACTS ROW (BOTTOM, CENTERED) */
+
+.footer-contacts-row {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 18px 2px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.footer-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.footer-contact-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 @media (max-width: 900px) {
   .footer-top,
   .footer-grid {
     grid-template-columns: 1fr;
   }
 }
+
 /* ================= WORKS ================= */
-
-.works-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.hero-banner.works img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 90%;
-  opacity: 0.75;
-}
-
-@media (max-width: 900px) {
-  .works-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.works-card {
-  border: 1px solid var(--line);
-  background: var(--card);
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-.works-thumb {
-  width: 100%;
-  height: 200px;
-  display: block;
-  object-fit: cover;
-  background: #0f1220;
-  border-bottom: 1px solid var(--line);
-}
-
-.works-thumb--empty {
-  border-bottom: 1px solid var(--line);
-}
-
-.works-body {
-  padding: 14px;
-}
 
 .works-title {
   font-size: 18px;
@@ -641,25 +536,6 @@ a {
 .works-video {
   margin-top: 12px;
 }
-/* ================= WORKS GRID (3 in a row) ================= */
-
-.works-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-@media (max-width: 1000px) {
-  .works-grid-3 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 700px) {
-  .works-grid-3 {
-    grid-template-columns: 1fr;
-  }
-}
 
 .works-item-card {
   border: 1px solid var(--line);
@@ -669,6 +545,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
 }
 
 .works-item-title {
@@ -679,6 +556,7 @@ a {
 .works-item-desc {
   color: var(--muted);
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .works-item-video {
@@ -689,48 +567,15 @@ a {
 
 .contacts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
-}
-
-.hero-banner.contacts img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 90%;
-  opacity: 0.75;
+  align-items: start;
 }
 
 @media (max-width: 900px) {
   .contacts-grid {
     grid-template-columns: 1fr;
   }
-}
-
-.contacts-card {
-  border: 1px solid var(--line);
-  background: var(--card);
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-.contacts-thumb {
-  width: 100%;
-  height: 200px;
-  display: block;
-  object-fit: cover;
-  background: #0f1220;
-  border-bottom: 1px solid var(--line);
-}
-
-.contacts-thumb--empty {
-  border-bottom: 1px solid var(--line);
-}
-
-.contacts-body {
-  padding: 14px;
 }
 
 .contacts-title {
@@ -747,6 +592,7 @@ a {
 .contacts-video {
   margin-top: 12px;
 }
+
 /* ================= INNER FOOTER SOCIAL ROW ================= */
 
 .footer-social-row {
@@ -773,19 +619,122 @@ a {
   transform: translateY(-1px);
 }
 
-.footer-social-link:active {
-  transform: translateY(0);
-}
-
-.footer-social-link img {
+.footer-social-icon {
   display: block;
   object-fit: contain;
 }
 
-/* mobile wrap */
+.footer-social-name {
+  display: block;
+  object-fit: contain;
+}
+
 @media (max-width: 900px) {
   .footer-social-row {
-    justify-content: center;
     flex-wrap: wrap;
+    justify-content: center;
   }
 }
+
+/* ================= RESPONSIVE (GENERAL) ================= */
+
+@media (max-width: 640px) {
+  .section {
+    padding: 18px 0;
+  }
+
+  .card {
+    border-radius: 16px;
+    padding: 14px;
+  }
+}
+
+/* ================= WORKS GRID (RESPONSIVE) ================= */
+
+/* Десктоп: 3 колонки */
+.works-grid-3 {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Планшет: 2 колонки */
+@media (max-width: 1024px) {
+  .works-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Телефон: 1 колонка */
+@media (max-width: 640px) {
+  .works-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+/* ================= HOME: PROFILE + INTRO/ABOUT ================= */
+
+.profile-row--center {
+  align-items: center;
+}
+
+.profile-text {
+  min-width: 0;
+}
+
+.profile-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.profile-subtitle {
+  margin-top: 4px;
+}
+
+.home-intro-grid {
+  margin-top: 16px;
+  align-items: start;
+}
+
+.home-about-html,
+.home-section-html {
+  line-height: 1.7;
+}
+
+/* ================= VIDEO EMBEDS ================= */
+
+.embed-16x9 {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #0f1220;
+  aspect-ratio: 16 / 9;
+}
+
+.embed-16x9 iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.video-player {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: #0f1220;
+  display: block;
+}
+
+/* ================= HOME (MOBILE TWEAKS) ================= */
+
+@media (max-width: 640px) {
+  .profile-title {
+    font-size: 16px;
+  }
+}
+
