@@ -141,7 +141,7 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 38%;
+  object-position: 50% 90%;
   opacity: 0.75;
 }
 
@@ -152,7 +152,7 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 38%;
+  object-position: 50% 90%;
   opacity: 0.75;
 }
 
@@ -161,6 +161,40 @@ img {
   /* clamp вместо padding:100px — плавно масштабируется под размеры экрана */
   padding: clamp(18px, 6vw, 100px);
   text-align: start;
+}
+/* ================= HERO TEXT (MOBILE: BOTTOM) ================= */
+
+@media (max-width: 640px) {
+  .hero-banner {
+    position: relative;
+  }
+
+  .hero-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    padding: 16px 18px 18px;
+    text-align: left;
+
+    /* затемнение снизу для читаемости */
+    background: linear-gradient(
+      to top,
+      rgba(11, 12, 16, 0.85),
+      rgba(11, 12, 16, 0.45),
+      rgba(11, 12, 16, 0)
+    );
+  }
+
+  .hero-title {
+    font-size: 26px;
+    margin-bottom: 6px;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+  }
 }
 
 .hero-title {
@@ -227,7 +261,7 @@ img {
 }
 
 .avatar-wrap:hover .avatar-img {
-  transform: scale(1.22);
+  transform: scale(5.0);
 }
 
 /* ================= AVATAR ROW (MOBILE) ================= */
