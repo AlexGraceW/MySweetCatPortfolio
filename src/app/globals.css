@@ -157,6 +157,7 @@ img {
   object-fit: cover;
   opacity: 1.0;
   z-index: 0;
+   filter: brightness(1.1);
 }
 
 /* Разные object-position для страниц (по желанию меняй) */
