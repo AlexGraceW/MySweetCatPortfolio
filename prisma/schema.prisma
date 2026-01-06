@@ -40,6 +40,10 @@ model HomePage {
   directorName      String
   directorRole      String
   directorAvatarUrl String
+
+ // ✅ NEW: фоновая картинка для секции Avatar/Profile
+  profileBgImageUrl   String?     // храним URL как у остальных изображений (/uploads/...)
+
   introProvider     String
   introVideoUrl     String
 

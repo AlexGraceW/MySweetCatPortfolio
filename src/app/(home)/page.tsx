@@ -23,6 +23,8 @@ export default async function HomePage() {
     );
   }
 
+  const profile_bg = String((home as any).profileBgImageUrl || "").trim();
+
   return (
     <>
       {/* HERO */}
@@ -41,8 +43,15 @@ export default async function HomePage() {
       {/* PROFILE + INTRO/ABOUT */}
       <section className="section">
         <div className="container">
-          <div className="card">
-            <div className="profile-row profile-row--center">
+          <div className={`card ${profile_bg ? "profile-card" : ""}`}>
+            {profile_bg ? (
+              <div className="profile-bg" aria-hidden="true">
+                <img src={profile_bg} alt="" />
+                <div className="profile-bg-overlay" />
+              </div>
+            ) : null}
+
+            <div className={`profile-row profile-row--center ${profile_bg ? "profile-foreground" : ""}`}>
               <div className="avatar-wrap">
                 <img className="avatar-img" src={home.directorAvatarUrl} alt="Avatar" />
               </div>
@@ -62,10 +71,7 @@ export default async function HomePage() {
 
             <div className="card">
               <h3 style={{ marginTop: 0 }}>{home.aboutTitle}</h3>
-              <div
-                className="muted home-about-html"
-                dangerouslySetInnerHTML={{ __html: home.aboutHtml }}
-              />
+              <div className="muted home-about-html" dangerouslySetInnerHTML={{ __html: home.aboutHtml }} />
             </div>
           </div>
         </div>
@@ -85,10 +91,7 @@ export default async function HomePage() {
               >
                 <div className="card">
                   <h2 style={{ marginTop: 0 }}>{s.title}</h2>
-                  <div
-                    className="muted home-section-html"
-                    dangerouslySetInnerHTML={{ __html: s.html }}
-                  />
+                  <div className="muted home-section-html" dangerouslySetInnerHTML={{ __html: s.html }} />
                 </div>
 
                 <div className="home-photo">
@@ -108,9 +111,7 @@ function VideoEmbed({ provider, url }: { provider: Provider; url: string }) {
   if (!u) return <div className="muted">No video URL</div>;
 
   if (provider === "SELF") {
-    return (
-      <video className="video-player" src={u} controls preload="metadata" />
-    );
+    return <video className="video-player" src={u} controls preload="metadata" />;
   }
 
   if (provider === "VIMEO") {

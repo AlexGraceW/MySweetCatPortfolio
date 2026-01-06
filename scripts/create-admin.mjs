@@ -1,17 +1,19 @@
 import { PrismaClient } from "@prisma/client";
-import * as bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const emailRaw = process.argv[2];
-const password = process.argv[3];
+const rawEmail = process.argv[2];
+const rawPassword = process.argv[3];
 
-if (!emailRaw || !password) {
+if (!rawEmail || !rawPassword) {
   console.log('Usage: node scripts/create-admin.mjs "admin@example.com" "password"');
   process.exit(1);
 }
 
-const email = String(emailRaw).trim().toLowerCase();
+const email = String(rawEmail).trim().toLowerCase();
+const password = String(rawPassword);
+
 const passwordHash = await bcrypt.hash(password, 10);
 
 await prisma.adminUser.upsert({

@@ -10,6 +10,10 @@ type HomeDto = {
   directorName: string;
   directorRole: string;
   directorAvatarUrl: string;
+
+  // ✅ NEW (optional)
+  profileBgImageUrl?: string | null;
+
   introProvider: string;
   introVideoUrl: string;
   aboutTitle: string;
@@ -136,6 +140,8 @@ export default function AdminHomePage() {
     );
   }
 
+  const profile_bg_value = (home.profileBgImageUrl || "").toString();
+
   return (
     <div className="grid" style={{ gap: 16 }}>
       <div className="card">
@@ -164,39 +170,171 @@ export default function AdminHomePage() {
 
         <div className="grid grid-2" style={{ marginTop: 14, alignItems: "start" }}>
           <div className="grid" style={{ gap: 10 }}>
-            <input className="input" value={home.heroTitle} onChange={(e) => setHome({ ...home, heroTitle: e.target.value })} placeholder="Hero title" />
-            <input className="input" value={home.heroSubtitle} onChange={(e) => setHome({ ...home, heroSubtitle: e.target.value })} placeholder="Hero subtitle" />
+            <input
+              className="input"
+              value={home.heroTitle}
+              onChange={(e) => setHome({ ...home, heroTitle: e.target.value })}
+              placeholder="Hero title"
+            />
+            <input
+              className="input"
+              value={home.heroSubtitle}
+              onChange={(e) => setHome({ ...home, heroSubtitle: e.target.value })}
+              placeholder="Hero subtitle"
+            />
 
-            <input className="input" value={home.bannerImageUrl} onChange={(e) => setHome({ ...home, bannerImageUrl: e.target.value })} placeholder="Banner URL" />
+            <input
+              className="input"
+              value={home.bannerImageUrl}
+              onChange={(e) => setHome({ ...home, bannerImageUrl: e.target.value })}
+              placeholder="Banner URL"
+            />
             <div className="card" style={{ padding: 10 }}>
-              <div className="muted" style={{ marginBottom: 8 }}>Banner preview</div>
+              <div className="muted" style={{ marginBottom: 8 }}>
+                Banner preview
+              </div>
               <img
                 src={home.bannerImageUrl}
                 alt="Banner preview"
-                style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 12, border: "1px solid var(--line)" }}
+                style={{
+                  width: "100%",
+                  height: 160,
+                  objectFit: "cover",
+                  borderRadius: 12,
+                  border: "1px solid var(--line)"
+                }}
               />
             </div>
 
-            <input className="input" value={home.directorName} onChange={(e) => setHome({ ...home, directorName: e.target.value })} placeholder="Name" />
-            <input className="input" value={home.directorRole} onChange={(e) => setHome({ ...home, directorRole: e.target.value })} placeholder="Role" />
+            <input
+              className="input"
+              value={home.directorName}
+              onChange={(e) => setHome({ ...home, directorName: e.target.value })}
+              placeholder="Name"
+            />
+            <input
+              className="input"
+              value={home.directorRole}
+              onChange={(e) => setHome({ ...home, directorRole: e.target.value })}
+              placeholder="Role"
+            />
 
-            <input className="input" value={home.directorAvatarUrl} onChange={(e) => setHome({ ...home, directorAvatarUrl: e.target.value })} placeholder="Avatar URL" />
+            <input
+              className="input"
+              value={home.directorAvatarUrl}
+              onChange={(e) => setHome({ ...home, directorAvatarUrl: e.target.value })}
+              placeholder="Avatar URL"
+            />
             <div className="card" style={{ padding: 10 }}>
-              <div className="muted" style={{ marginBottom: 8 }}>Avatar preview</div>
+              <div className="muted" style={{ marginBottom: 8 }}>
+                Avatar preview
+              </div>
               <img
                 src={home.directorAvatarUrl}
                 alt="Avatar preview"
-                style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 999, border: "1px solid var(--line)" }}
+                style={{
+                  width: 96,
+                  height: 96,
+                  objectFit: "cover",
+                  borderRadius: 999,
+                  border: "1px solid var(--line)"
+                }}
               />
             </div>
 
-            <input className="input" value={home.introProvider} onChange={(e) => setHome({ ...home, introProvider: e.target.value })} placeholder='Intro provider: "YOUTUBE" | "VIMEO" | "SELF"' />
-            <input className="input" value={home.introVideoUrl} onChange={(e) => setHome({ ...home, introVideoUrl: e.target.value })} placeholder="Intro video URL" />
+            {/* ✅ NEW: Profile background image */}
+            <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: "10px 0" }} />
+            <div className="muted" style={{ marginTop: -2 }}>
+              Avatar section background (optional)
+            </div>
+
+            <input
+              className="input"
+              value={profile_bg_value}
+              onChange={(e) => setHome({ ...home, profileBgImageUrl: e.target.value })}
+              placeholder="Profile background URL (optional)"
+            />
+
+            <div className="grid grid-2" style={{ alignItems: "start", gap: 10 }}>
+              <div className="card" style={{ padding: 10 }}>
+                <div className="muted" style={{ marginBottom: 8 }}>
+                  Background preview
+                </div>
+                {profile_bg_value ? (
+                  <img
+                    src={profile_bg_value}
+                    alt="Profile background preview"
+                    style={{
+                      width: "100%",
+                      height: 140,
+                      objectFit: "cover",
+                      borderRadius: 12,
+                      border: "1px solid var(--line)"
+                    }}
+                  />
+                ) : (
+                  <div className="muted">No background image</div>
+                )}
+              </div>
+
+              <div className="card" style={{ padding: 10 }}>
+                <div className="muted" style={{ marginBottom: 8 }}>
+                  Upload & set background
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+
+                    setStatus("Uploading...");
+                    try {
+                      const url = await uploadFile(f);
+                      setHome({ ...home, profileBgImageUrl: url });
+                      setStatus(`Uploaded: ${url}`);
+                    } catch (err: any) {
+                      setStatus(err?.message || "Upload error");
+                    } finally {
+                      e.currentTarget.value = "";
+                    }
+                  }}
+                />
+                <div className="muted" style={{ marginTop: 8 }}>
+                  Tip: upload → it auto-fills Profile background URL.
+                </div>
+              </div>
+            </div>
 
             <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: "10px 0" }} />
 
-            <input className="input" value={home.aboutTitle} onChange={(e) => setHome({ ...home, aboutTitle: e.target.value })} placeholder="About title" />
-            <textarea className="textarea" value={home.aboutHtml} onChange={(e) => setHome({ ...home, aboutHtml: e.target.value })} placeholder='About HTML, e.g. <p>...</p>' />
+            <input
+              className="input"
+              value={home.introProvider}
+              onChange={(e) => setHome({ ...home, introProvider: e.target.value })}
+              placeholder='Intro provider: "YOUTUBE" | "VIMEO" | "SELF"'
+            />
+            <input
+              className="input"
+              value={home.introVideoUrl}
+              onChange={(e) => setHome({ ...home, introVideoUrl: e.target.value })}
+              placeholder="Intro video URL"
+            />
+
+            <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: "10px 0" }} />
+
+            <input
+              className="input"
+              value={home.aboutTitle}
+              onChange={(e) => setHome({ ...home, aboutTitle: e.target.value })}
+              placeholder="About title"
+            />
+            <textarea
+              className="textarea"
+              value={home.aboutHtml}
+              onChange={(e) => setHome({ ...home, aboutHtml: e.target.value })}
+              placeholder='About HTML, e.g. <p>...</p>'
+            />
           </div>
 
           <div className="card" style={{ borderRadius: 18 }}>
@@ -226,7 +364,9 @@ export default function AdminHomePage() {
             </div>
 
             <div className="card" style={{ padding: 10, marginTop: 12 }}>
-              <div className="muted" style={{ marginBottom: 8 }}>About preview</div>
+              <div className="muted" style={{ marginBottom: 8 }}>
+                About preview
+              </div>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>{home.aboutTitle}</div>
               <div
                 className="muted"
@@ -244,8 +384,12 @@ export default function AdminHomePage() {
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <h2 style={{ marginTop: 0 }}>Sections</h2>
           <div style={{ display: "flex", gap: 10 }}>
-            <button className="btn" onClick={load}>Refresh</button>
-            <button className="btn btn-primary" onClick={addSection}>Add section</button>
+            <button className="btn" onClick={load}>
+              Refresh
+            </button>
+            <button className="btn btn-primary" onClick={addSection}>
+              Add section
+            </button>
           </div>
         </div>
 
@@ -311,9 +455,15 @@ function SectionEditor({
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div style={{ fontWeight: 700 }}>Section #{section.id}</div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn" onClick={onMoveUp}>Up</button>
-          <button className="btn" onClick={onMoveDown}>Down</button>
-          <button className="btn" onClick={onDelete}>Delete</button>
+          <button className="btn" onClick={onMoveUp}>
+            Up
+          </button>
+          <button className="btn" onClick={onMoveDown}>
+            Down
+          </button>
+          <button className="btn" onClick={onDelete}>
+            Delete
+          </button>
           <button className="btn btn-primary" onClick={() => onSave({ title, photoUrl, html })}>
             Save section
           </button>
@@ -338,11 +488,19 @@ function SectionEditor({
           </div>
 
           <div className="card" style={{ padding: 10 }}>
-            <div className="muted" style={{ marginBottom: 8 }}>Photo preview</div>
+            <div className="muted" style={{ marginBottom: 8 }}>
+              Photo preview
+            </div>
             <img
               src={photoUrl}
               alt="Section preview"
-              style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: 12, border: "1px solid var(--line)" }}
+              style={{
+                width: "100%",
+                height: 180,
+                objectFit: "cover",
+                borderRadius: 12,
+                border: "1px solid var(--line)"
+              }}
             />
           </div>
         </div>

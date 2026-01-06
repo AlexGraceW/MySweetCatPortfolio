@@ -19,6 +19,10 @@ export async function GET() {
       directorName: "John Doe",
       directorRole: "Video Editor / Director",
       directorAvatarUrl: "/uploads/avatar.jpg",
+
+      // ✅ NEW (optional)
+      profileBgImageUrl: "",
+
       introProvider: "YOUTUBE",
       introVideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       aboutTitle: "About",
@@ -35,6 +39,8 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
+  const profile_bg_raw = (body as any).profileBgImageUrl;
+
   const data = {
     heroTitle: String((body as any).heroTitle || "").trim(),
     heroSubtitle: String((body as any).heroSubtitle || "").trim(),
@@ -42,6 +48,13 @@ export async function PUT(req: Request) {
     directorName: String((body as any).directorName || "").trim(),
     directorRole: String((body as any).directorRole || "").trim(),
     directorAvatarUrl: String((body as any).directorAvatarUrl || "").trim(),
+
+    // ✅ NEW (optional): пустая строка -> null
+    profileBgImageUrl:
+      profile_bg_raw === null || profile_bg_raw === undefined
+        ? null
+        : String(profile_bg_raw).trim() || null,
+
     introProvider: String((body as any).introProvider || "").trim(),
     introVideoUrl: String((body as any).introVideoUrl || "").trim(),
     aboutTitle: String((body as any).aboutTitle || "").trim(),
