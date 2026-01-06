@@ -9,10 +9,7 @@ function json_error(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
 }
 
-// Разрешаем:
-// - любые image/* (png/jpg/webp/gif/svg/heic/heif и т.д.)
-// - любые video/* (если вдруг позже понадобится)
-// - application/octet-stream (часто так приходит с некоторых устройств/браузеров)
+// Разрешаем image/*, video/* и application/octet-stream
 function isAllowedMime(mime: string) {
   if (!mime) return true;
   if (mime.startsWith("image/")) return true;
@@ -23,12 +20,13 @@ function isAllowedMime(mime: string) {
 
 function safeExtFromName(name: string) {
   const ext = path.extname(name || "").toLowerCase();
-  // ext может быть пустым — это ок
-  // но убираем всё подозрительное (на всякий)
   if (!ext || ext.length > 10) return "";
   if (!/^\.[a-z0-9]+$/.test(ext)) return "";
   return ext;
 }
+
+const UPLOAD_DIR =
+  process.env.UPLOAD_DIR || path.join(process.cwd(), "public", "uploads"); // локально ок
 
 export async function POST(req: Request) {
   try {
@@ -39,7 +37,6 @@ export async function POST(req: Request) {
       return json_error("No file provided.");
     }
 
-    // Ограничение размера (можешь увеличить при необходимости)
     const MAX_MB = 50;
     const sizeMb = file.size / (1024 * 1024);
     if (sizeMb > MAX_MB) {
@@ -51,16 +48,14 @@ export async function POST(req: Request) {
       return json_error(`Unsupported file type: ${mime || "unknown"}`);
     }
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
 
     const originalName = file.name || "upload";
     const ext = safeExtFromName(originalName);
 
-    // Уникальное имя файла
     const id = crypto.randomUUID();
     const filename = `${id}${ext}`;
-    const outPath = path.join(uploadsDir, filename);
+    const outPath = path.join(UPLOAD_DIR, filename);
 
     const bytes = await file.arrayBuffer();
     await fs.writeFile(outPath, Buffer.from(bytes));
