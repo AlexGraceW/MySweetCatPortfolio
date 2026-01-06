@@ -10,10 +10,7 @@ type HomeDto = {
   directorName: string;
   directorRole: string;
   directorAvatarUrl: string;
-
-  // ✅ NEW (optional)
   profileBgImageUrl?: string | null;
-
   introProvider: string;
   introVideoUrl: string;
   aboutTitle: string;
@@ -24,7 +21,9 @@ type SectionDto = {
   id: number;
   title: string;
   html: string;
-  photoUrl: string;
+  photoUrl: string; // legacy
+  photoUrlsJson?: string; // from DB
+  photoUrls: string[]; // UI only
   sortOrder: number;
 };
 
@@ -38,12 +37,37 @@ export default function AdminHomePage() {
     [sections]
   );
 
+  function parsePhotoUrlsJson(json: any): string[] {
+    try {
+      const arr = JSON.parse(String(json || "[]"));
+      if (!Array.isArray(arr)) return [];
+      return arr.map(String).map((x) => x.trim()).filter(Boolean);
+    } catch {
+      return [];
+    }
+  }
+
   async function load() {
     setStatus("");
     const res = await fetch("/api/admin/home");
     const data = await res.json();
+
     setHome(data.home);
-    setSections(data.sections);
+
+    const nextSections: SectionDto[] = (data.sections || []).map((s: any) => {
+      const urls = parsePhotoUrlsJson(s.photoUrlsJson);
+      return {
+        id: s.id,
+        title: s.title,
+        html: s.html,
+        photoUrl: s.photoUrl || "",
+        photoUrlsJson: s.photoUrlsJson || "[]",
+        photoUrls: urls,
+        sortOrder: Number(s.sortOrder || 0)
+      };
+    });
+
+    setSections(nextSections);
   }
 
   useEffect(() => {
@@ -77,7 +101,7 @@ export default function AdminHomePage() {
       body: JSON.stringify({
         title: "Background",
         html: "<p>Write your text here...</p>",
-        photoUrl: "/uploads/placeholder.jpg"
+        photoUrl: "" // legacy optional
       })
     });
 
@@ -93,7 +117,7 @@ export default function AdminHomePage() {
     await load();
   }
 
-  async function updateSection(id: number, patch: Partial<SectionDto>) {
+  async function updateSection(id: number, patch: Partial<SectionDto> & { photoUrls?: string[] }) {
     const res = await fetch(`/api/admin/sections/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -140,8 +164,6 @@ export default function AdminHomePage() {
     );
   }
 
-  const profile_bg_value = (home.profileBgImageUrl || "").toString();
-
   return (
     <div className="grid" style={{ gap: 16 }}>
       <div className="card">
@@ -155,9 +177,7 @@ export default function AdminHomePage() {
             <button
               className="btn"
               onClick={() =>
-                fetch("/api/admin/logout", { method: "POST" }).then(() =>
-                  location.replace("/admin/login")
-                )
+                fetch("/api/admin/logout", { method: "POST" }).then(() => location.replace("/admin/login"))
               }
             >
               Logout
@@ -170,171 +190,46 @@ export default function AdminHomePage() {
 
         <div className="grid grid-2" style={{ marginTop: 14, alignItems: "start" }}>
           <div className="grid" style={{ gap: 10 }}>
-            <input
-              className="input"
-              value={home.heroTitle}
-              onChange={(e) => setHome({ ...home, heroTitle: e.target.value })}
-              placeholder="Hero title"
-            />
-            <input
-              className="input"
-              value={home.heroSubtitle}
-              onChange={(e) => setHome({ ...home, heroSubtitle: e.target.value })}
-              placeholder="Hero subtitle"
-            />
+            <input className="input" value={home.heroTitle} onChange={(e) => setHome({ ...home, heroTitle: e.target.value })} placeholder="Hero title" />
+            <input className="input" value={home.heroSubtitle} onChange={(e) => setHome({ ...home, heroSubtitle: e.target.value })} placeholder="Hero subtitle" />
 
-            <input
-              className="input"
-              value={home.bannerImageUrl}
-              onChange={(e) => setHome({ ...home, bannerImageUrl: e.target.value })}
-              placeholder="Banner URL"
-            />
+            <input className="input" value={home.bannerImageUrl} onChange={(e) => setHome({ ...home, bannerImageUrl: e.target.value })} placeholder="Banner URL" />
             <div className="card" style={{ padding: 10 }}>
-              <div className="muted" style={{ marginBottom: 8 }}>
-                Banner preview
-              </div>
+              <div className="muted" style={{ marginBottom: 8 }}>Banner preview</div>
               <img
                 src={home.bannerImageUrl}
                 alt="Banner preview"
-                style={{
-                  width: "100%",
-                  height: 160,
-                  objectFit: "cover",
-                  borderRadius: 12,
-                  border: "1px solid var(--line)"
-                }}
+                style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 12, border: "1px solid var(--line)" }}
               />
             </div>
 
-            <input
-              className="input"
-              value={home.directorName}
-              onChange={(e) => setHome({ ...home, directorName: e.target.value })}
-              placeholder="Name"
-            />
-            <input
-              className="input"
-              value={home.directorRole}
-              onChange={(e) => setHome({ ...home, directorRole: e.target.value })}
-              placeholder="Role"
-            />
+            <input className="input" value={home.directorName} onChange={(e) => setHome({ ...home, directorName: e.target.value })} placeholder="Name" />
+            <input className="input" value={home.directorRole} onChange={(e) => setHome({ ...home, directorRole: e.target.value })} placeholder="Role" />
 
-            <input
-              className="input"
-              value={home.directorAvatarUrl}
-              onChange={(e) => setHome({ ...home, directorAvatarUrl: e.target.value })}
-              placeholder="Avatar URL"
-            />
+            <input className="input" value={home.directorAvatarUrl} onChange={(e) => setHome({ ...home, directorAvatarUrl: e.target.value })} placeholder="Avatar URL" />
             <div className="card" style={{ padding: 10 }}>
-              <div className="muted" style={{ marginBottom: 8 }}>
-                Avatar preview
-              </div>
+              <div className="muted" style={{ marginBottom: 8 }}>Avatar preview</div>
               <img
                 src={home.directorAvatarUrl}
                 alt="Avatar preview"
-                style={{
-                  width: 96,
-                  height: 96,
-                  objectFit: "cover",
-                  borderRadius: 999,
-                  border: "1px solid var(--line)"
-                }}
+                style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 999, border: "1px solid var(--line)" }}
               />
             </div>
 
-            {/* ✅ NEW: Profile background image */}
-            <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: "10px 0" }} />
-            <div className="muted" style={{ marginTop: -2 }}>
-              Avatar section background (optional)
-            </div>
-
             <input
               className="input"
-              value={profile_bg_value}
-              onChange={(e) => setHome({ ...home, profileBgImageUrl: e.target.value })}
-              placeholder="Profile background URL (optional)"
+              value={home.profileBgImageUrl || ""}
+              onChange={(e) => setHome({ ...home, profileBgImageUrl: e.target.value || null })}
+              placeholder="Profile BG URL (optional)"
             />
 
-            <div className="grid grid-2" style={{ alignItems: "start", gap: 10 }}>
-              <div className="card" style={{ padding: 10 }}>
-                <div className="muted" style={{ marginBottom: 8 }}>
-                  Background preview
-                </div>
-                {profile_bg_value ? (
-                  <img
-                    src={profile_bg_value}
-                    alt="Profile background preview"
-                    style={{
-                      width: "100%",
-                      height: 140,
-                      objectFit: "cover",
-                      borderRadius: 12,
-                      border: "1px solid var(--line)"
-                    }}
-                  />
-                ) : (
-                  <div className="muted">No background image</div>
-                )}
-              </div>
-
-              <div className="card" style={{ padding: 10 }}>
-                <div className="muted" style={{ marginBottom: 8 }}>
-                  Upload & set background
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const f = e.target.files?.[0];
-                    if (!f) return;
-
-                    setStatus("Uploading...");
-                    try {
-                      const url = await uploadFile(f);
-                      setHome({ ...home, profileBgImageUrl: url });
-                      setStatus(`Uploaded: ${url}`);
-                    } catch (err: any) {
-                      setStatus(err?.message || "Upload error");
-                    } finally {
-                      e.currentTarget.value = "";
-                    }
-                  }}
-                />
-                <div className="muted" style={{ marginTop: 8 }}>
-                  Tip: upload → it auto-fills Profile background URL.
-                </div>
-              </div>
-            </div>
+            <input className="input" value={home.introProvider} onChange={(e) => setHome({ ...home, introProvider: e.target.value })} placeholder='Intro provider: "YOUTUBE" | "VIMEO" | "SELF"' />
+            <input className="input" value={home.introVideoUrl} onChange={(e) => setHome({ ...home, introVideoUrl: e.target.value })} placeholder="Intro video URL" />
 
             <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: "10px 0" }} />
 
-            <input
-              className="input"
-              value={home.introProvider}
-              onChange={(e) => setHome({ ...home, introProvider: e.target.value })}
-              placeholder='Intro provider: "YOUTUBE" | "VIMEO" | "SELF"'
-            />
-            <input
-              className="input"
-              value={home.introVideoUrl}
-              onChange={(e) => setHome({ ...home, introVideoUrl: e.target.value })}
-              placeholder="Intro video URL"
-            />
-
-            <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: "10px 0" }} />
-
-            <input
-              className="input"
-              value={home.aboutTitle}
-              onChange={(e) => setHome({ ...home, aboutTitle: e.target.value })}
-              placeholder="About title"
-            />
-            <textarea
-              className="textarea"
-              value={home.aboutHtml}
-              onChange={(e) => setHome({ ...home, aboutHtml: e.target.value })}
-              placeholder='About HTML, e.g. <p>...</p>'
-            />
+            <input className="input" value={home.aboutTitle} onChange={(e) => setHome({ ...home, aboutTitle: e.target.value })} placeholder="About title" />
+            <textarea className="textarea" value={home.aboutHtml} onChange={(e) => setHome({ ...home, aboutHtml: e.target.value })} placeholder='About HTML, e.g. <p>...</p>' />
           </div>
 
           <div className="card" style={{ borderRadius: 18 }}>
@@ -364,15 +259,9 @@ export default function AdminHomePage() {
             </div>
 
             <div className="card" style={{ padding: 10, marginTop: 12 }}>
-              <div className="muted" style={{ marginBottom: 8 }}>
-                About preview
-              </div>
+              <div className="muted" style={{ marginBottom: 8 }}>About preview</div>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>{home.aboutTitle}</div>
-              <div
-                className="muted"
-                style={{ lineHeight: 1.7 }}
-                dangerouslySetInnerHTML={{ __html: home.aboutHtml }}
-              />
+              <div className="muted" style={{ lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: home.aboutHtml }} />
             </div>
           </div>
         </div>
@@ -384,12 +273,8 @@ export default function AdminHomePage() {
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <h2 style={{ marginTop: 0 }}>Sections</h2>
           <div style={{ display: "flex", gap: 10 }}>
-            <button className="btn" onClick={load}>
-              Refresh
-            </button>
-            <button className="btn btn-primary" onClick={addSection}>
-              Add section
-            </button>
+            <button className="btn" onClick={load}>Refresh</button>
+            <button className="btn btn-primary" onClick={addSection}>Add section</button>
           </div>
         </div>
 
@@ -437,34 +322,44 @@ function SectionEditor({
   onDelete: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
-  onSave: (patch: Partial<SectionDto>) => Promise<void>;
+  onSave: (patch: Partial<SectionDto> & { photoUrls?: string[] }) => Promise<void>;
   onUpload: (file: File) => Promise<string>;
 }) {
   const [title, setTitle] = useState(section.title);
-  const [photoUrl, setPhotoUrl] = useState(section.photoUrl);
   const [html, setHtml] = useState(section.html);
+
+  // NEW: list of photos
+  const [photoUrls, setPhotoUrls] = useState<string[]>(section.photoUrls || []);
+
+  // legacy fallback (оставляем, но редактировать можно)
+  const [photoUrlLegacy, setPhotoUrlLegacy] = useState(section.photoUrl || "");
 
   useEffect(() => {
     setTitle(section.title);
-    setPhotoUrl(section.photoUrl);
     setHtml(section.html);
-  }, [section.id, section.title, section.photoUrl, section.html]);
+    setPhotoUrls(section.photoUrls || []);
+    setPhotoUrlLegacy(section.photoUrl || "");
+  }, [section.id]);
 
   return (
     <div className="card" style={{ background: "rgba(255,255,255,0.02)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div style={{ fontWeight: 700 }}>Section #{section.id}</div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn" onClick={onMoveUp}>
-            Up
-          </button>
-          <button className="btn" onClick={onMoveDown}>
-            Down
-          </button>
-          <button className="btn" onClick={onDelete}>
-            Delete
-          </button>
-          <button className="btn btn-primary" onClick={() => onSave({ title, photoUrl, html })}>
+          <button className="btn" onClick={onMoveUp}>Up</button>
+          <button className="btn" onClick={onMoveDown}>Down</button>
+          <button className="btn" onClick={onDelete}>Delete</button>
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              onSave({
+                title,
+                html,
+                photoUrls,
+                photoUrl: photoUrlLegacy
+              })
+            }
+          >
             Save section
           </button>
         </div>
@@ -472,36 +367,101 @@ function SectionEditor({
 
       <div className="grid" style={{ gap: 10, marginTop: 10 }}>
         <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <div className="grid grid-2" style={{ alignItems: "start" }}>
-          <div className="grid" style={{ gap: 10 }}>
-            <input className="input" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} />
+
+        {/* MULTI PHOTOS */}
+        <div className="card" style={{ padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Carousel photos</div>
+          <div className="muted" style={{ marginBottom: 10 }}>
+            Add multiple images. On Home page section will show carousel. If empty — uses legacy photoUrl.
+          </div>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <input
               type="file"
+              accept="image/*"
               onChange={async (e) => {
                 const f = e.target.files?.[0];
                 if (!f) return;
                 const url = await onUpload(f);
-                setPhotoUrl(url);
+                setPhotoUrls((prev) => [...prev, url]);
                 e.currentTarget.value = "";
               }}
             />
+            <button className="btn" onClick={() => setPhotoUrls([])}>
+              Clear carousel list
+            </button>
           </div>
 
-          <div className="card" style={{ padding: 10 }}>
-            <div className="muted" style={{ marginBottom: 8 }}>
-              Photo preview
-            </div>
-            <img
-              src={photoUrl}
-              alt="Section preview"
-              style={{
-                width: "100%",
-                height: 180,
-                objectFit: "cover",
-                borderRadius: 12,
-                border: "1px solid var(--line)"
-              }}
-            />
+          <div className="grid" style={{ gap: 10, marginTop: 12 }}>
+            {photoUrls.length === 0 ? (
+              <div className="muted">No carousel photos yet.</div>
+            ) : (
+              photoUrls.map((u, idx) => (
+                <div key={`${u}-${idx}`} className="card" style={{ padding: 10 }}>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+                    <input
+                      className="input"
+                      value={u}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setPhotoUrls((prev) => prev.map((x, i) => (i === idx ? v : x)));
+                      }}
+                      style={{ flex: "1 1 420px" }}
+                    />
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        className="btn"
+                        onClick={() => setPhotoUrls((prev) => prev.filter((_, i) => i !== idx))}
+                      >
+                        Remove
+                      </button>
+                      <label className="btn" style={{ cursor: "pointer" }}>
+                        Upload replace
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          onChange={async (e) => {
+                            const f = e.target.files?.[0];
+                            if (!f) return;
+                            const url = await onUpload(f);
+                            setPhotoUrls((prev) => prev.map((x, i) => (i === idx ? url : x)));
+                            e.currentTarget.value = "";
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="card" style={{ padding: 10, marginTop: 10 }}>
+                    <div className="muted" style={{ marginBottom: 8 }}>Preview</div>
+                    <img
+                      src={u}
+                      alt="Preview"
+                      style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: 12, border: "1px solid var(--line)" }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* LEGACY FALLBACK */}
+        <div className="card" style={{ padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Legacy single photoUrl (optional fallback)</div>
+          <input className="input" value={photoUrlLegacy} onChange={(e) => setPhotoUrlLegacy(e.target.value)} />
+          <div className="card" style={{ padding: 10, marginTop: 10 }}>
+            <div className="muted" style={{ marginBottom: 8 }}>Legacy preview</div>
+            {photoUrlLegacy ? (
+              <img
+                src={photoUrlLegacy}
+                alt="Legacy preview"
+                style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: 12, border: "1px solid var(--line)" }}
+              />
+            ) : (
+              <div className="muted">Empty</div>
+            )}
           </div>
         </div>
 

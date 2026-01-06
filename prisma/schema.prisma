@@ -29,7 +29,6 @@ model Session {
   @@index([expiresAt])
 }
 
-
 // HOME PAGE
 
 model HomePage {
@@ -41,8 +40,8 @@ model HomePage {
   directorRole      String
   directorAvatarUrl String
 
- // ✅ NEW: фоновая картинка для секции Avatar/Profile
-  profileBgImageUrl   String?     // храним URL как у остальных изображений (/uploads/...)
+  // optional profile bg (если у тебя уже есть)
+  profileBgImageUrl String?
 
   introProvider     String
   introVideoUrl     String
@@ -62,7 +61,12 @@ model HomeSection {
 
   title    String
   html     String
-  photoUrl String
+
+  // ✅ NEW: список фото (карусель) хранится JSON-строкой
+  photoUrlsJson String @default("[]")
+
+  // ✅ legacy fallback (оставляем, чтобы старые секции работали)
+  photoUrl String @default("")
 
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
@@ -70,6 +74,35 @@ model HomeSection {
 }
 
 // WORKS / PORTFOLIO
+
+model WorksPage {
+  id             Int      @id @default(1)
+  heroTitle      String
+  heroSubtitle   String
+  bannerImageUrl String
+  updatedAt      DateTime @updatedAt
+
+  works          WorkItem[]
+}
+
+model WorkItem {
+  id          Int       @id @default(autoincrement())
+  worksPageId Int       @default(1)
+  worksPage   WorksPage @relation(fields: [worksPageId], references: [id], onDelete: Cascade)
+
+  title       String
+  slug        String    @unique
+  description String    @default("")
+  provider    String    @default("YOUTUBE") // YOUTUBE | VIMEO | SELF
+  videoUrl    String
+  sortOrder   Int       @default(0)
+  published   Boolean   @default(true)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([worksPageId, sortOrder])
+}
 
 model Work {
   id               Int      @id @default(autoincrement())
@@ -90,6 +123,14 @@ model Work {
 
 // CONTACT FORM
 
+model ContactsPage {
+  id             Int      @id @default(1)
+  heroTitle      String
+  heroSubtitle   String
+  bannerImageUrl String
+  updatedAt      DateTime @updatedAt
+}
+
 model ContactMessage {
   id        Int      @id @default(autoincrement())
   name      String
@@ -99,40 +140,4 @@ model ContactMessage {
   userAgent String?
   createdAt DateTime @default(now())
   status    String   @default("new")
-}
-model WorksPage {
-  id            Int      @id @default(1)
-  heroTitle     String
-  heroSubtitle  String
-  bannerImageUrl String
-  updatedAt     DateTime @updatedAt
-
-  works         WorkItem[]
-}
-
-model WorkItem {
-  id           Int      @id @default(autoincrement())
-  worksPageId  Int      @default(1)
-  worksPage    WorksPage @relation(fields: [worksPageId], references: [id], onDelete: Cascade)
-
-  title        String
-  slug         String   @unique
-  description  String   @default("")
-  provider     String   @default("YOUTUBE") // YOUTUBE | VIMEO | SELF
-  videoUrl     String
-  sortOrder    Int      @default(0)
-  published    Boolean  @default(true)
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([worksPageId, sortOrder])
-}
-
-model ContactsPage {
-  id             Int      @id @default(1)
-  heroTitle      String
-  heroSubtitle   String
-  bannerImageUrl String
-  updatedAt      DateTime @updatedAt
 }

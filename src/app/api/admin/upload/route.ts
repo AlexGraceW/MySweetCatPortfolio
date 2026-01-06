@@ -1,38 +1,72 @@
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
-import { randomBytes } from "crypto";
+import path from "node:path";
+import fs from "node:fs/promises";
+import crypto from "node:crypto";
 
 export const runtime = "nodejs";
 
-function sanitizeExt(filename: string): string {
-  const ext = path.extname(filename).toLowerCase();
-  const allowed = new Set([".jpg", ".jpeg", ".png", ".webp", ".mp4"]);
-  return allowed.has(ext) ? ext : "";
+function json_error(message: string, status = 400) {
+  return NextResponse.json({ error: message }, { status });
+}
+
+// Разрешаем:
+// - любые image/* (png/jpg/webp/gif/svg/heic/heif и т.д.)
+// - любые video/* (если вдруг позже понадобится)
+// - application/octet-stream (часто так приходит с некоторых устройств/браузеров)
+function isAllowedMime(mime: string) {
+  if (!mime) return true;
+  if (mime.startsWith("image/")) return true;
+  if (mime.startsWith("video/")) return true;
+  if (mime === "application/octet-stream") return true;
+  return false;
+}
+
+function safeExtFromName(name: string) {
+  const ext = path.extname(name || "").toLowerCase();
+  // ext может быть пустым — это ок
+  // но убираем всё подозрительное (на всякий)
+  if (!ext || ext.length > 10) return "";
+  if (!/^\.[a-z0-9]+$/.test(ext)) return "";
+  return ext;
 }
 
 export async function POST(req: Request) {
-  const form = await req.formData();
-  const file = form.get("file");
+  try {
+    const form = await req.formData();
+    const file = form.get("file");
 
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "File is required" }, { status: 400 });
+    if (!(file instanceof File)) {
+      return json_error("No file provided.");
+    }
+
+    // Ограничение размера (можешь увеличить при необходимости)
+    const MAX_MB = 50;
+    const sizeMb = file.size / (1024 * 1024);
+    if (sizeMb > MAX_MB) {
+      return json_error(`File too large. Max ${MAX_MB} MB.`);
+    }
+
+    const mime = file.type || "";
+    if (!isAllowedMime(mime)) {
+      return json_error(`Unsupported file type: ${mime || "unknown"}`);
+    }
+
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    const originalName = file.name || "upload";
+    const ext = safeExtFromName(originalName);
+
+    // Уникальное имя файла
+    const id = crypto.randomUUID();
+    const filename = `${id}${ext}`;
+    const outPath = path.join(uploadsDir, filename);
+
+    const bytes = await file.arrayBuffer();
+    await fs.writeFile(outPath, Buffer.from(bytes));
+
+    return NextResponse.json({ url: `/uploads/${filename}` });
+  } catch (e: any) {
+    return json_error(e?.message || "Upload failed", 500);
   }
-
-  const ext = sanitizeExt(file.name);
-  if (!ext) {
-    return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
-  }
-
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const base = randomBytes(12).toString("hex");
-  const filename = `${base}${ext}`;
-
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadsDir, { recursive: true });
-
-  const fullPath = path.join(uploadsDir, filename);
-  await writeFile(fullPath, bytes);
-
-  return NextResponse.json({ ok: true, url: `/uploads/${filename}` });
 }

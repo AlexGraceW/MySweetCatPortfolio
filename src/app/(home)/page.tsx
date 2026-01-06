@@ -1,4 +1,8 @@
-import { prisma } from "../../lib/prisma";
+// REPLACE FILE: src/app/(home)/page.tsx
+
+import { prisma } from "@/lib/prisma";
+import { HeroBanner } from "@/components/HeroBanner";
+import PhotoCarousel from "@/components/PhotoCarousel";
 
 type Provider = "YOUTUBE" | "VIMEO" | "SELF";
 
@@ -23,46 +27,19 @@ export default async function HomePage() {
     );
   }
 
-  const profile_bg = String((home as any).profileBgImageUrl || "").trim();
-
   return (
     <>
       {/* HERO */}
-      <section className="hero">
-        <div className="container">
-          <div className="hero-banner home">
-            <img src={home.bannerImageUrl} alt="Banner" />
-            <div className="hero-text">
-              <h1 className="hero-title">{home.heroTitle}</h1>
-              <p className="hero-subtitle">{home.heroSubtitle}</p>
-            </div>
-          </div>
+      <HeroBanner variant="home" imageUrl={home.bannerImageUrl} title={home.heroTitle} subtitle={home.heroSubtitle}>
+        {/* Avatar on hero-banner */}
+        <div className="hero-avatar">
+          <img src={home.directorAvatarUrl} alt="Avatar" />
         </div>
-      </section>
+      </HeroBanner>
 
-      {/* PROFILE + INTRO/ABOUT */}
+      {/* INTRO / ABOUT */}
       <section className="section">
         <div className="container">
-          <div className={`card ${profile_bg ? "profile-card" : ""}`}>
-            {profile_bg ? (
-              <div className="profile-bg" aria-hidden="true">
-                <img src={profile_bg} alt="" />
-                <div className="profile-bg-overlay" />
-              </div>
-            ) : null}
-
-            <div className={`profile-row profile-row--center ${profile_bg ? "profile-foreground" : ""}`}>
-              <div className="avatar-wrap">
-                <img className="avatar-img" src={home.directorAvatarUrl} alt="Avatar" />
-              </div>
-
-              <div className="profile-text">
-                <div className="profile-title">{home.directorName}</div>
-                <div className="profile-subtitle muted">{home.directorRole}</div>
-              </div>
-            </div>
-          </div>
-
           <div className="grid grid-2 home-intro-grid">
             <div className="card">
               <h3 style={{ marginTop: 0 }}>Intro video</h3>
@@ -77,11 +54,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* SECTIONS (ALTERNATING) */}
+      {/* SECTIONS */}
       <section className="section">
         <div className="container">
           {home.sections.map((s, idx) => {
             const reverse = idx % 2 === 1;
+
+            const photoUrls = getSectionPhotoUrls(s as any); // supports new + legacy
 
             return (
               <div
@@ -95,7 +74,11 @@ export default async function HomePage() {
                 </div>
 
                 <div className="home-photo">
-                  <img src={s.photoUrl} alt={s.title} loading="lazy" />
+                  {photoUrls.length > 1 ? (
+                    <PhotoCarousel urls={photoUrls} alt={s.title} />
+                  ) : (
+                    <img src={photoUrls[0] || ""} alt={s.title} loading="lazy" />
+                  )}
                 </div>
               </div>
             );
@@ -104,6 +87,31 @@ export default async function HomePage() {
       </section>
     </>
   );
+}
+
+/**
+ * Supports:
+ * - NEW: section.photoUrlsJson (stringified array of URLs)
+ * - LEGACY: section.photoUrl (single URL)
+ */
+function getSectionPhotoUrls(section: { photoUrlsJson?: string | null; photoUrl?: string | null }): string[] {
+  // 1) try JSON array
+  const raw = (section.photoUrlsJson || "").trim();
+  if (raw) {
+    try {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        const cleaned = arr.map((x) => String(x || "").trim()).filter(Boolean);
+        if (cleaned.length) return cleaned;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // 2) fallback to legacy single photoUrl
+  const one = String(section.photoUrl || "").trim();
+  return one ? [one] : [];
 }
 
 function VideoEmbed({ provider, url }: { provider: Provider; url: string }) {

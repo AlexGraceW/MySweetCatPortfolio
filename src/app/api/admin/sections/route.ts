@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../lib/prisma";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  }
 
-  const title = typeof body?.title === "string" ? body.title.trim() : "Background";
-  const html = typeof body?.html === "string" ? body.html : "<p>Write your text here...</p>";
-  const photoUrl = typeof body?.photoUrl === "string" ? body.photoUrl.trim() : "/uploads/placeholder.jpg";
-
-  const max = await prisma.homeSection.aggregate({
-    where: { homeId: 1 },
-    _max: { sortOrder: true }
-  });
-
-  const nextSort = (max._max.sortOrder ?? 0) + 10;
+  const title = String((body as any).title || "Section").trim();
+  const html = String((body as any).html || "<p>Write your text here...</p>").trim();
+  const photoUrl = String((body as any).photoUrl || "").trim();
 
   const created = await prisma.homeSection.create({
     data: {
@@ -21,9 +19,11 @@ export async function POST(req: Request) {
       title,
       html,
       photoUrl,
-      sortOrder: nextSort
-    }
+      photoUrlsJson: "[]",
+      sortOrder: 0
+    },
+    select: { id: true }
   });
 
-  return NextResponse.json({ ok: true, section: created });
+  return NextResponse.json({ ok: true, id: created.id });
 }

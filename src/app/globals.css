@@ -107,7 +107,7 @@ img {
   }
 }
 
-/* ================= HERO ================= */
+/* ================= HERO (BASE MECHANICS) ================= */
 
 .hero {
   border-bottom: 1px solid var(--line);
@@ -121,85 +121,89 @@ img {
   overflow: hidden;
   border: 1px solid var(--line);
   background: #0f1220;
+
+  /* ===== GLOBAL FALLBACKS (НЕ ТРОГАЙ, если хочешь всё задавать по страницам) ===== */
+  --hero-title-left: 18px;
+  --hero-title-top: 18px;
+  --hero-title-right: auto;
+  --hero-title-bottom: auto;
+  --hero-title-align: left;
+
+  --hero-subtitle-left: 18px;
+  --hero-subtitle-top: 64px;
+  --hero-subtitle-right: auto;
+  --hero-subtitle-bottom: auto;
+  --hero-subtitle-align: left;
+
+  --m-hero-title-left: 18px;
+  --m-hero-title-top: 18px;
+  --m-hero-title-right: 18px;
+  --m-hero-title-bottom: auto;
+  --m-hero-title-align: left;
+
+  --m-hero-subtitle-left: 18px;
+  --m-hero-subtitle-top: 64px;
+  --m-hero-subtitle-right: 18px;
+  --m-hero-subtitle-bottom: auto;
+  --m-hero-subtitle-align: left;
 }
 
-/* HOME banner */
+/* Баннер-картинка — общая механика */
+.hero-banner img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+  z-index: 0;
+}
+
+/* Разные object-position для страниц (по желанию меняй) */
 .hero-banner.home img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   object-position: 50% 38%;
-  opacity: 0.75;
 }
 
-/* WORKS banner */
 .hero-banner.works img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   object-position: 50% 80%;
-  opacity: 0.75;
 }
 
-/* CONTACTS banner */
 .hero-banner.contacts img {
+  object-position: 50% 90%;
+}
+
+/* Оверлей ниже текста */
+.hero-banner::after {
+  content: "";
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 90%;
-  opacity: 0.75;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    1200px 500px at 20% 40%,
+    rgba(11, 12, 16, 0.55),
+    rgba(11, 12, 16, 0.18),
+    rgba(11, 12, 16, 0)
+  );
 }
 
-.hero-text {
-  position: relative;
-  /* clamp вместо padding:100px — плавно масштабируется под размеры экрана */
-  padding: clamp(18px, 6vw, 100px);
-  text-align: start;
+/* Split wrapper: текст поверх баннера */
+.hero-text.hero-text--split {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
 }
-/* ================= HERO TEXT (MOBILE — HOME ONLY) ================= */
 
-@media (max-width: 640px) {
-  /* Только Home */
-  .hero-banner.home {
-    position: relative;
-  }
-
-  .hero-banner.home .hero-text {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    padding: 16px 18px 18px;
-    text-align: left;
-
-    background: linear-gradient(
-      to top,
-      rgba(11, 12, 16, 0.85),
-      rgba(11, 12, 16, 0.45),
-      rgba(11, 12, 16, 0)
-    );
-  }
-
-  .hero-banner.home .hero-title {
-    font-size: 26px;
-    margin-bottom: 6px;
-  }
-
-  .hero-banner.home .hero-subtitle {
-    font-size: 14px;
-  }
+.hero-title-wrap,
+.hero-subtitle-wrap {
+  position: absolute;
+  z-index: 2;
+  max-width: min(900px, calc(100% - 36px));
 }
 
 .hero-title {
   font-size: 42px;
-  margin: 0 0 10px;
+  margin: 0;
 }
 
 .hero-subtitle {
@@ -207,8 +211,24 @@ img {
   color: var(--muted);
 }
 
-/* ================= HERO (MOBILE) ================= */
+/* DESKTOP positions from vars */
+.hero-title-wrap {
+  left: var(--hero-title-left);
+  top: var(--hero-title-top);
+  right: var(--hero-title-right);
+  bottom: var(--hero-title-bottom);
+  text-align: var(--hero-title-align);
+}
 
+.hero-subtitle-wrap {
+  left: var(--hero-subtitle-left);
+  top: var(--hero-subtitle-top);
+  right: var(--hero-subtitle-right);
+  bottom: var(--hero-subtitle-bottom);
+  text-align: var(--hero-subtitle-align);
+}
+
+/* MOBILE */
 @media (max-width: 640px) {
   .hero-banner {
     min-height: 220px;
@@ -223,68 +243,123 @@ img {
   .hero-subtitle {
     font-size: 14px;
   }
+
+  .hero-title-wrap {
+    left: var(--m-hero-title-left);
+    top: var(--m-hero-title-top);
+    right: var(--m-hero-title-right);
+    bottom: var(--m-hero-title-bottom);
+    text-align: var(--m-hero-title-align);
+  }
+
+  .hero-subtitle-wrap {
+    left: var(--m-hero-subtitle-left);
+    top: var(--m-hero-subtitle-top);
+    right: var(--m-hero-subtitle-right);
+    bottom: var(--m-hero-subtitle-bottom);
+    text-align: var(--m-hero-subtitle-align);
+  }
 }
 
-/* ================= AVATAR ================= */
+/* ================= PAGE-SPECIFIC POSITIONS ================= */
+/* ВОТ ТУТ ТЫ И МЕНЯЕШЬ ПОЛОЖЕНИЕ Title/SubTitle ДЛЯ КАЖДОЙ СТРАНИЦЫ */
 
-.profile-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
+/* ---------- HOME ---------- */
+.hero-banner.home {
+  /* DESKTOP */
+  --hero-title-left: 70px;
+  --hero-title-top: 100px;
+  --hero-title-right: 18px;
+  --hero-title-bottom: 18px;
+  --hero-title-align: center;
+
+  --hero-subtitle-left: 70px;
+  --hero-subtitle-top: auto;
+  --hero-subtitle-right: 18px;
+  --hero-subtitle-bottom: 80px;
+  --hero-subtitle-align: center;
 }
-
-.avatar-wrap {
-  width: 92px;
-  height: 92px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  overflow: hidden;
-  background: #0f1220;
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: 100% 50%
-
-}
-
-.avatar-wrap:hover .avatar-img {
-  transform: scale(1.8);
-}
-
-/* ================= AVATAR ROW (MOBILE) ================= */
 
 @media (max-width: 640px) {
-  /* Аватар слева по центру высоты блока, крупнее.
-     Текст (title/subtitle) по центру блока. */
-  .profile-row {
-    position: relative;
-    min-height: 140px;
-    padding-left: 140px; /* место под аватар */
-    align-items: center; /* вертикальное центрирование контента */
-  }
+  .hero-banner.home {
+    /* MOBILE */
+    --m-hero-title-left: 18px;
+    --m-hero-title-top: 100px;
+    --m-hero-title-right: 18px;
+    --m-hero-title-bottom: 18px;
+    --m-hero-title-align: right;
 
-  .avatar-wrap {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 120px;
-    height: 120px;
+    --m-hero-subtitle-left: 1px;
+    --m-hero-subtitle-top: 180px;
+    --m-hero-subtitle-right: 1px;
+    --m-hero-subtitle-bottom: 18;
+    --m-hero-subtitle-align: center;
   }
+}
 
-  .profile-text {
-    width: 100%;
-    text-align: center;
-    align-items: center;
+/* ---------- WORKS ---------- */
+.hero-banner.works {
+  /* DESKTOP */
+  --hero-title-left: 70px;
+  --hero-title-top: 60px;
+  --hero-title-right: auto;
+  --hero-title-bottom: auto;
+  --hero-title-align: left;
+
+  --hero-subtitle-left: 70px;
+  --hero-subtitle-top: 130px;
+  --hero-subtitle-right: auto;
+  --hero-subtitle-bottom: auto;
+  --hero-subtitle-align: left;
+}
+
+@media (max-width: 640px) {
+  .hero-banner.works {
+    /* MOBILE */
+    --m-hero-title-left: 18px;
+    --m-hero-title-top: 18px;
+    --m-hero-title-right: 18px;
+    --m-hero-title-bottom: auto;
+    --m-hero-title-align: left;
+
+    --m-hero-subtitle-left: 18px;
+    --m-hero-subtitle-top: 64px;
+    --m-hero-subtitle-right: 18px;
+    --m-hero-subtitle-bottom: auto;
+    --m-hero-subtitle-align: left;
+  }
+}
+
+/* ---------- CONTACTS ---------- */
+.hero-banner.contacts {
+  /* DESKTOP */
+  --hero-title-left: 70px;
+  --hero-title-top: 60px;
+  --hero-title-right: auto;
+  --hero-title-bottom: auto;
+  --hero-title-align: left;
+
+  --hero-subtitle-left: 70px;
+  --hero-subtitle-top: 130px;
+  --hero-subtitle-right: auto;
+  --hero-subtitle-bottom: auto;
+  --hero-subtitle-align: left;
+}
+
+@media (max-width: 640px) {
+  .hero-banner.contacts {
+    /* MOBILE */
+    --m-hero-title-left: 18px;
+    --m-hero-title-top: 18px;
+    --m-hero-title-right: 18px;
+    --m-hero-title-bottom: auto;
+    --m-hero-title-align: left;
+
+    --m-hero-subtitle-left: 18px;
+    --m-hero-subtitle-top: 64px;
+    --m-hero-subtitle-right: 18px;
+    --m-hero-subtitle-bottom: auto;
+    --m-hero-subtitle-align: left;
   }
 }
 
@@ -350,6 +425,7 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
 /* ================= HOME SECTIONS (MOBILE: PHOTO FIRST) ================= */
 
 @media (max-width: 640px) {
@@ -724,6 +800,7 @@ img {
     gap: 14px;
   }
 }
+
 /* ================= HOME: PROFILE + INTRO/ABOUT ================= */
 
 .profile-row--center {
@@ -789,6 +866,7 @@ img {
     font-size: 16px;
   }
 }
+
 /* ================= HOME: PROFILE BACKGROUND ================= */
 
 .profile-card {
@@ -825,4 +903,136 @@ img {
 .profile-foreground {
   position: relative;
   z-index: 1;
+}
+
+/* ================= HERO AVATAR (HOME ONLY) ================= */
+
+.hero-banner.home {
+  position: relative;
+}
+
+/* DESKTOP */
+.hero-avatar {
+  position: absolute;
+  left: 28px;
+  bottom: 28px;
+
+  width: 200px;
+  height: 200px;
+  border-radius: 999px;
+  overflow: hidden;
+
+  border: 1px solid var(--line);
+  background: #0f1220;
+  z-index: 3; /* выше текста/оверлея */
+}
+
+.hero-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 100% 10% !important;
+   transition: transform 260ms ease, filter 260ms ease;
+}
+
+.hero-avatar:hover img {
+  transform: scale(1.8) translate(-4px, 4px);
+  filter: brightness(1.1);
+}
+
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .hero-avatar {
+    left: 16px;
+    bottom: 50%;
+    transform: translateY(50%);
+    width: 120px;
+    height: 120px;
+  }
+}
+/* ================= PHOTO CAROUSEL ================= */
+
+.photo-carousel {
+  width: 100%;
+  height: 100%;
+}
+
+.pc-track {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  border-radius: 16px;
+  cursor: grab;
+
+  /* скрыть полосу прокрутки (опционально) */
+  scrollbar-width: none;
+}
+.pc-track::-webkit-scrollbar {
+  display: none;
+}
+
+.pc-track.pc-grabbing {
+  cursor: grabbing;
+}
+
+.pc-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  height: 100%;
+}
+
+.pc-slide img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pc-ui {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pc-btn {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.pc-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.pc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+}
+
+.pc-dot.is-active {
+  background: rgba(122, 167, 255, 0.85);
+  border-color: rgba(122, 167, 255, 0.85);
 }
